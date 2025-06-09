@@ -5,7 +5,7 @@
 ### - Real-Time Analyze
 ### - Hash Auth Check
 ### - Memory Regions Scan
-## Concept clearance:
+## Concepts clearance:
 #### Wrote Everything in simple way using api's
 #### Normal algo's easy to understand
 #### Some cryptographical things also used 
