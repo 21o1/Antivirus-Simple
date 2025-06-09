@@ -50,7 +50,7 @@ std::string GetMD5(const std::string& filename) {
 }
 
 void QuarantineFile(const std::string& filePath) {
-    std::string quarantinePath = "C:\Quarantine\" + fs::path(filePath).filename().string();
+    std::string quarantinePath = "C:\\Quarantine\\" + fs::path(filePath).filename().string();
     fs::create_directories("C:\Quarantine\");
     fs::rename(filePath, quarantinePath);
 }
