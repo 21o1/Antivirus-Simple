@@ -4,3 +4,4 @@
 ### - Basic Analyze with some advanced style
 ### - Real-Time Analyze
 ### - Hash Auth Check
+### - Memory Regions , Loaded Modules Analyze
