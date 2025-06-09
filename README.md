@@ -5,4 +5,7 @@
 ### - Real-Time Analyze
 ### - Hash Auth Check
 ### - Memory Regions Scan
-#### Wrote Everything in simple way some api used , normal algo's easy to understand
+#### Wrote Everything in simple way using api's
+#### Normal algo's easy to understand
+#### Some cryptographical things also used 
+wait for updates
