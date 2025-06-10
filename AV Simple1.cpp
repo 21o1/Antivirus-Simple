@@ -30,42 +30,44 @@ std::unordered_set<std::string> LoadSignatures(const std::string& filename) {
 }
 
 // Compute MD5 hash of a file
-std::string ComputeMD5(const std::string& filepath) {
-    HCRYPTPROV hProv = 0;
-    HCRYPTHASH hHash = 0;
-    BYTE buffer[1024];
-    DWORD bytesRead;
-    BYTE hashBytes[16];
-    DWORD hashLen = sizeof(hashBytes);
-    std::string result;
+std::string GetMD5Hash(const BYTE* buffer, DWORD length) {
+    HCRYPTPROV cryptoProvider = 0;
+    HCRYPTHASH hashHandle = 0;
+    BYTE md5[16];
+    DWORD md5Len = sizeof(md5);
+    char result[33] = {};
 
-    HANDLE file = CreateFileA(filepath.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (file == INVALID_HANDLE_VALUE) return "";
-
-    if (CryptAcquireContext(&hProv, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
-        if (CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash)) {
-            while (ReadFile(file, buffer, sizeof(buffer), &bytesRead, nullptr) && bytesRead > 0) {
-                if (!CryptHashData(hHash, buffer, bytesRead, 0)) {
-                    break;
-                }
-            }
-
-            if (CryptGetHashParam(hHash, HP_HASHVAL, hashBytes, &hashLen, 0)) {
-                char hex[33] = { 0 };
-                for (DWORD i = 0; i < hashLen; ++i) {
-                    sprintf(hex + i * 2, "%02x", hashBytes[i]);
-                }
-                result = hex;
-            }
-
-            CryptDestroyHash(hHash);
-        }
-        CryptReleaseContext(hProv, 0);
+    if (!CryptAcquireContext(&cryptoProvider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
+        return {};
     }
 
-    CloseHandle(file);
-    return result;
+    if (!CryptCreateHash(cryptoProvider, CALG_MD5, 0, 0, &hashHandle)) {
+        CryptReleaseContext(cryptoProvider, 0);
+        return {};
+    }
+
+    if (!CryptHashData(hashHandle, buffer, length, 0)) {
+        CryptDestroyHash(hashHandle);
+        CryptReleaseContext(cryptoProvider, 0);
+        return {};
+    }
+
+    if (!CryptGetHashParam(hashHandle, HP_HASHVAL, md5, &md5Len, 0)) {
+        CryptDestroyHash(hashHandle);
+        CryptReleaseContext(cryptoProvider, 0);
+        return {};
+    }
+
+    for (int i = 0; i < 16; ++i) {
+        snprintf(result + i * 2, 3, "%02x", md5[i]);
+    }
+
+    CryptDestroyHash(hashHandle);
+    CryptReleaseContext(cryptoProvider, 0);
+
+    return std::string(result);
 }
+
 
 // Scan files in a directory and quarantine if matched with known threats
 void ScanDirectory(const std::string& rootPath, const std::unordered_set<std::string>& signatures) {
